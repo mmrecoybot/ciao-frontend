@@ -1,0 +1,42 @@
+{/* <div key={index} className="flex flex-col">
+    <div
+        onClick={() =>item.subMenu ? toggleSubmenu(index) : router.push(item.href)}
+        className={`flex items-center py-3 px-4 cursor-pointer transition duration-200 dark:text-gray-500 ${pathname.includes(item.href)
+            ? "bg-gray-800 dark:bg-gray-950 text-gray-200 dark:text-gray-300"
+            : "hover:bg-gray-800 dark:hover:bg-gray-950 hover:text-gray-200 dark:hover:text-gray-300"
+            }`}
+    >
+        <div
+            className={`flex items-center ${isCollapsed ? "justify-center" : "justify-between w-full"
+                }`}
+        >
+            <div className="flex items-center">
+                {item.icon}
+                {!isCollapsed && <span className="ml-3 font-serif text-sm font-bold">{item.label}</span>}
+            </div>
+            {!isCollapsed && item.subMenu && (
+                <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-200 ${openSubmenu === index ? "rotate-180" : ""
+                        }`}
+                />
+            )}
+        </div>
+    </div>
+
+    {item.subMenu && openSubmenu === index && !isCollapsed && (
+        <div className="bg-emerald-200 dark:bg-gray-800 overflow-hidden">
+            {item.subMenu.map((subItem, subIndex) => (
+                <Link
+                    key={subIndex}
+                    href={subItem.href}
+                    className={`flex items-center py-2 px-8 hover:bg-emerald-300 dark:hover:bg-gray-700 transition-colors duration-200 ${pathname.includes(subItem.href) &&
+                        " bg-gray-700 dark:bg-gray-950/80 text-lime-100 dark:text-lime-300"
+                        }`}
+                >
+                    {subItem.icon}
+                    <span className="ml-4">{subItem.label}</span>
+                </Link>
+            ))}
+        </div>
+    )}
+</div> */}
