@@ -4,8 +4,8 @@
   "description": "A basic starter for an express.js API",
   "main": "index.js",
   "scripts": {
-    "start": "PORT=5000 node src/index.js",
-    "dev": "PORT=5000 nodemon src/index.js",
+    "start": "PORT=8020  node src/index.js",
+    "dev": "PORT=8020  nodemon src/index.js",
     "lint": "eslint --fix src",
     "postinstall": "prisma generate",
     "test": "jest",
