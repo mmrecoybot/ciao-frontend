@@ -1,0 +1,633 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-1.0.x"]
+}
+
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  description String?
+  permissions Permission[]
+  users       User[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  Admin       Admin[]
+}
+
+model Permission {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  roles       Role[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Admin {
+  id                Int                 @id @default(autoincrement())
+  email             String              @unique
+  name              String?
+  password          String
+  roleId            Int
+  role              Role                @relation(fields: [roleId], references: [id])
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @default(now()) @updatedAt
+  adminRefreshToken adminRefreshToken[]
+
+  @@index([email])
+  @@index([roleId])
+  @@index([createdAt])
+}
+
+model User {
+  id                   Int                  @id @default(autoincrement())
+  email                String               @unique
+  name                 String?
+  password             String
+  image                String?
+  roleId               Int
+  role                 Role                 @relation(fields: [roleId], references: [id])
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @default(now()) @updatedAt
+  refreshToken         refreshToken[]
+  Order                Order[]
+  Cart                 Cart[]
+  Address              Address[]
+  notification         notification[]
+  dealerId             Int?
+  dealer               Dealer?              @relation(fields: [dealerId], references: [id])
+  Actor                Actor[]
+  passwordResetExpires DateTime?
+  passwordResetToken   String?
+  Activation           Activation[]
+  OrderStatusHistory   OrderStatusHistory[]
+  passwordReset        passwordReset?
+  otp                  otp?
+
+  @@index([email])
+  @@index([roleId])
+  @@index([createdAt])
+  @@index([dealerId])
+}
+
+model passwordReset {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model otp {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model refreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model adminRefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  adminId   Int
+  admin     Admin    @relation(fields: [adminId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([adminId])
+  @@index([createdAt])
+}
+
+model Category {
+  id          Int           @id @default(autoincrement())
+  name        String        @unique
+  description String?
+  products    Product[]
+  subCategory subCategory[]
+  logo        String?
+}
+
+model subCategory {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  categoryId  Int
+  category    Category  @relation(fields: [categoryId], references: [id])
+  logo        String?
+  Product     Product[]
+}
+
+model Brand {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  logo        String?
+  products    Product[]
+}
+
+model Product {
+  id             Int                @id @default(autoincrement())
+  name           String             @unique
+  description    String
+  descriptionIt  String?
+  dealer_price   Decimal
+  retail_price   Decimal
+  purchase_price Decimal
+  margin         Decimal
+  product_code   String             @unique
+  discount       Decimal            @default(0)
+  variations     ProductVariation[] // Relation to product variations
+  categoryId     Int
+  category       Category           @relation(fields: [categoryId], references: [id])
+  subCategoryId  Int
+  subCategory    subCategory        @relation(fields: [subCategoryId], references: [id])
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @default(now()) @updatedAt
+  deletedAt      DateTime? // NULL means not deleted
+  brandId        Int                @default(1)
+  brand          Brand              @relation(fields: [brandId], references: [id])
+  thumbnail      String?
+
+  Offer      Offer[]
+  Order      Order[]     @relation("OrderProducts")
+  OrderItem  OrderItem[]
+  CartItem   CartItem[]
+  Cart       Cart[]      @relation("OrderProducts")
+  totalSales Int         @default(0)
+  viewCount  Int         @default(0)
+  isActive   Boolean     @default(true)
+
+  @@index([categoryId])
+  @@index([subCategoryId])
+  @@index([brandId])
+  @@index([createdAt])
+  @@index([product_code])
+}
+
+model ProductVariation {
+  id        Int         @id @default(autoincrement())
+  img       String
+  color     String
+  stock     Int
+  productId Int
+  product   Product     @relation(fields: [productId], references: [id])
+  OrderItem OrderItem[]
+  CartItem  CartItem[]
+}
+
+model Order {
+  id                      Int                  @id @default(autoincrement())
+  userId                  Int
+  user                    User                 @relation(fields: [userId], references: [id])
+  products                Product[]            @relation("OrderProducts")
+  total                   Decimal
+  status                  String
+  createdAt               DateTime             @default(now())
+  updatedAt               DateTime             @default(now()) @updatedAt
+  deletedAt               DateTime? // NULL means not deleted
+  OrderItem               OrderItem[]
+  subtotal                Decimal              @default(0) // Before tax/discounts
+  tax                     Decimal              @default(0)
+  discount                Decimal              @default(0)
+  shippingCost            Decimal              @default(0)
+  paymentMethod           String?
+  paymentProof            String?
+  deliveryProof           String?
+  orderDocument           String?
+  paymentDate             String?
+  deliveryDate            String?
+  paymentConfirmationDate String?
+  shippingDate            String?
+  orderNumber             String?              @unique
+  returnDate              String?
+  returnProof             String?
+  returnConfirmationDate  String?
+  returnReason            String?
+  returnStatus            String?
+  remarks                 String?
+  OrderStatusHistory      OrderStatusHistory[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([orderNumber])
+}
+
+model OrderItem {
+  id          Int              @id @default(autoincrement())
+  orderId     Int
+  order       Order            @relation(fields: [orderId], references: [id])
+  productId   Int
+  product     Product          @relation(fields: [productId], references: [id])
+  variationId Int
+  variation   ProductVariation @relation(fields: [variationId], references: [id]) // Store selected variation details (e.g., color, size)
+  quantity    Int
+  createdAt   DateTime         @default(now())
+}
+
+model OrderStatusHistory {
+  id          Int      @id @default(autoincrement())
+  orderId     Int
+  status      String
+  changedById Int
+  remarks     String? // Track remarks in the history table
+  changedAt   DateTime @default(now())
+  changedBy   User     @relation(fields: [changedById], references: [id])
+  order       Order    @relation(fields: [orderId], references: [id])
+
+  @@index([orderId])
+  @@index([changedAt])
+  @@index([changedById])
+}
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  userId    Int
+  user      User       @relation(fields: [userId], references: [id])
+  products  Product[]  @relation("OrderProducts")
+  items     CartItem[] // Relation to CartItem
+  total     Decimal    @default(0) // Calculated from CartItem
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @default(now()) @updatedAt
+  deletedAt DateTime? // NULL means not deleted
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model CartItem {
+  id          Int              @id @default(autoincrement())
+  cartId      Int
+  cart        Cart             @relation(fields: [cartId], references: [id])
+  productId   Int
+  product     Product          @relation(fields: [productId], references: [id])
+  variationId Int
+  variation   ProductVariation @relation(fields: [variationId], references: [id]) // Optional, if product has variations
+  quantity    Int              @default(1) // Quantity of the product in the cart
+  createdAt   DateTime         @default(now())
+}
+
+model Address {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id])
+  address   String
+  city      String
+  state     String
+  country   String
+  zip       String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  deletedAt DateTime? // NULL means not deleted
+}
+
+model Company {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+  deletedAt   DateTime? // NULL means not deleted
+  Tarrif      Tarrif[]
+  logo        String?
+
+  Activation Activation[]
+
+  serialNumber serialNumber[]
+}
+
+model Tarrif {
+  id             Int       @id @default(autoincrement())
+  name           String    @unique
+  description    String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @default(now()) @updatedAt
+  deletedAt      DateTime? // NULL means not deleted
+  companyId      Int
+  company        Company   @relation(fields: [companyId], references: [id])
+  categoryOffer  String
+  categoryTarrif String
+  portability    String
+  client         String
+  price          Decimal
+
+  Activation Activation[]
+}
+
+model TarrifOptions {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+  deletedAt   DateTime? // NULL means not deleted
+}
+
+model Activation {
+  id                  Int          @id @default(autoincrement())
+  client              String?
+  portability         Boolean
+  categoryOffer       String
+  categoryTarrif      String
+  moodOfPayment       String
+  paymentDocument     String?
+  paymentDate         String?
+  paymentStatus       String?
+  activationDate      String?
+  remarks             String?
+  activationDocuments String?
+  status              String       @default("Pending")
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @default(now()) @updatedAt
+  deletedAt           DateTime? // NULL means not deleted
+  userId              Int
+  tarrifId            Int
+  serialNumberId      Int
+  companyId           Int
+  user                User         @relation(fields: [userId], references: [id])
+  tarrif              Tarrif       @relation(fields: [tarrifId], references: [id])
+  serialNumber        serialNumber @relation(fields: [serialNumberId], references: [id])
+  company             Company      @relation(fields: [companyId], references: [id])
+
+  @@index([userId])
+  @@index([tarrifId])
+  @@index([serialNumberId])
+  @@index([companyId])
+  @@index([createdAt])
+}
+
+model serialNumber {
+  id         Int          @id @default(autoincrement())
+  number     String       @unique
+  companyId  Int?
+  company    Company?     @relation(fields: [companyId], references: [id])
+  dealerId   Int?
+  dealer     Dealer?      @relation(fields: [dealerId], references: [id])
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @default(now()) @updatedAt
+  deletedAt  DateTime? // NULL means not deleted
+  Activation Activation[]
+
+  @@index([companyId])
+  @@index([dealerId])
+  @@index([createdAt])
+}
+
+model Offer {
+  id            Int             @id @default(autoincrement())
+  name          String          @unique
+  description   String?
+  products      Product[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @default(now()) @updatedAt
+  deletedAt     DateTime? // NULL means not deleted
+  OfferCategory OfferCategory[]
+}
+
+model OfferCategory {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  offers      Offer[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+  deletedAt   DateTime? // NULL means not deleted
+}
+
+model notification {
+  id        Int       @id @default(autoincrement())
+  title     String
+  body      String
+  type      String?
+  link      String?
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id])
+  seen      Boolean
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  deletedAt DateTime? // NULL means not deleted
+
+  @@index([userId])
+  @@index([seen])
+  @@index([createdAt])
+}
+
+model Dealer {
+  id              Int              @id @default(autoincrement())
+  dealerCode      String           @unique
+  companyName     String           @unique
+  vatNumber       String           @unique
+  taxCode         String
+  adminPhone      String           @unique
+  pecEmail        String           @unique
+  adminEmail      String           @unique
+  iban            String           @unique
+  paymentMethod   String?
+  accountNumber   String?
+  recoveryEmail   String           @unique
+  websiteUrl      String?
+  billingAddress  BillingAddress?
+  creditDetails   CreditDetails?
+  salePoints      SalePoint[]
+  signedContracts SignedContract[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  User            User[]
+  Documents       Documents[]
+  serialNumber    serialNumber[]
+
+  @@index([companyName])
+  @@index([vatNumber])
+  @@index([adminEmail])
+  @@index([dealerCode])
+}
+
+// Name of company:
+// P. IVA :
+// Address:
+// Postal code:
+// City:
+// Country:
+// Email: 
+// Mobile:
+// Document attachment file:
+// Visura attachment file:
+model BillingAddress {
+  id           Int    @id @default(autoincrement())
+  dealerId     Int    @unique
+  street       String
+  number       String
+  zipCode      String
+  country      String
+  municipality String
+  province     String
+  dealer       Dealer @relation(fields: [dealerId], references: [id])
+}
+
+model CreditDetails {
+  id                   Int    @id @default(autoincrement())
+  dealerId             Int    @unique
+  assignedCreditLimit  Float
+  invoicesToPay        Float
+  availableCreditLimit Float
+  escudo               Float
+  creditForTopUps      Float
+  dealer               Dealer @relation(fields: [dealerId], references: [id])
+}
+
+model SalePoint {
+  id          Int    @id @default(autoincrement())
+  dealerId    Int
+  name        String
+  address     String
+  city        String
+  province    String
+  phoneNumber String
+  dealer      Dealer @relation(fields: [dealerId], references: [id])
+}
+
+model SignedContract {
+  id       Int      @id @default(autoincrement())
+  dealerId Int
+  name     String
+  signedOn DateTime
+  fileUrl  String
+  dealer   Dealer   @relation(fields: [dealerId], references: [id])
+}
+
+model Documents {
+  id       Int    @id @default(autoincrement())
+  dealerId Int
+  name     String
+  fileUrl  String
+  dealer   Dealer @relation(fields: [dealerId], references: [id])
+}
+
+model Workflow {
+  id          Int            @id @default(autoincrement())
+  type        String // e.g., "Order", "Cancellation"
+  referenceId String // e.g., Order ID, Transaction ID
+  status      String // Current status, e.g., "Pending", "Completed", "Canceled"
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  steps       WorkflowStep[]
+}
+
+model WorkflowStep {
+  id         Int      @id @default(autoincrement())
+  workflowId Int
+  action     String // e.g., "Order Placed", "Payment Processed", "Order Canceled"
+  actorId    Int // Reference to the User or System
+  actorRole  String // Role of the actor, e.g., "Customer", "Admin", "System"
+  metadata   Json? // Additional info, e.g., { "reason": "User Request" }
+  createdAt  DateTime @default(now())
+  workflow   Workflow @relation(fields: [workflowId], references: [id])
+  Actor      Actor[]
+
+  @@index([workflowId])
+  @@index([actorId])
+  @@index([createdAt])
+}
+
+model Actor {
+  id        Int            @id @default(autoincrement())
+  name      String
+  role      String // e.g., "Admin", "Customer", "System"
+  email     String?        @unique
+  userId    Int?
+  user      User?          @relation(fields: [userId], references: [id])
+  workflows WorkflowStep[]
+}
+
+model Banner {
+  id        Int       @id @default(autoincrement())
+  title     String
+  image     String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  deletedAt DateTime? // NULL means not deleted
+}
+
+model Pages {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  content     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+  deletedAt   DateTime? // NULL means not deleted
+
+  SiteInfo SiteInfo[]
+}
+
+model Faq {
+  id        Int       @id @default(autoincrement())
+  question  String
+  answer    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  deletedAt DateTime? // NULL means not deleted
+
+  SiteInfo SiteInfo[]
+}
+
+model SocialMedia {
+  id        Int        @id @default(autoincrement())
+  name      String
+  link      String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @default(now()) @updatedAt
+  deletedAt DateTime? // NULL means not deleted
+  SiteInfo  SiteInfo[]
+}
+
+model SiteInfo {
+  id          Int           @id @default(autoincrement())
+  title       String
+  description String?
+  webLogo     String?
+  mobileLogo  String?
+  favicon     String?
+  email       String
+  phone       String
+  address     String?
+  city        String?
+  state       String?
+  zip         String?
+  socialMedia SocialMedia[]
+  pages       Pages[]
+  faq         Faq[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @default(now()) @updatedAt
+  deletedAt   DateTime? // NULL means not deleted
+}
+
+
