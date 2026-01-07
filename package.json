@@ -3,14 +3,12 @@
   "version": "1.2.0",
   "description": "A basic starter for an express.js API",
   "main": "index.js",
-  "scripts": {
-    "start": "PORT=8020  node src/index.js",
-    "dev": "PORT=8020  nodemon src/index.js",
-    "lint": "eslint --fix src",
-    "postinstall": "prisma generate",
-    "test": "jest",
-    "seed": "node prisma/seed.js",
-    "backup": "node prisma/backup-seed.js"
+"scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start -p 8020",
+    "lint": "next lint",
+    "turbo": "rimraf .next && next dev --turbo"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
