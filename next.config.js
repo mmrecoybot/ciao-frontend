@@ -1,10 +1,15 @@
-// next.config.js
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-
   images: {
     remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "logo.com",
+      },
+      {
+        protocol: "https",
+        hostname: "logo.com",
+      },
       {
         protocol: "https",
         hostname: "dummyjson.com",

@@ -57,7 +57,7 @@ export default function NavSideBar({
       tag: dictionary.order_management,
       menu: [
         {
-          href: `/${lang}/admin/orders`,
+          href: `/${lang}/admin/orders`, //not showing
           icon: <ShoppingCart className="w-5 h-5" />,
           label: dictionary.orders,
           requiredPermission: "view_all_orders", // Permission needed to see Orders link
@@ -204,7 +204,7 @@ export default function NavSideBar({
   const user = session?.user;
   const { data: userPermissions, isLoading } = useFetchPermissionByUserIdQuery(
     user?.sub,
-    { skip: !user?.sub }
+    { skip: !user?.sub },
   );
 
   // Helper function to check if the user has a specific permission
@@ -218,7 +218,7 @@ export default function NavSideBar({
 
     // Check if the permissionName exists in the user's permissions array (case-sensitive match)
     return userPermissions.some(
-      (permission) => permission.name === permissionName
+      (permission) => permission.name === permissionName,
     );
   };
 
@@ -261,7 +261,7 @@ export default function NavSideBar({
               // Keep the menu item if it has a direct link (and permission if required) OR if its filtered submenu has items
               (!menu.requiredPermission ||
                 userHasPermission(menu.requiredPermission)) && // User must have permission for the menu item itself
-              (menu.href || (menu.subMenu && menu.subMenu.length > 0)) // Item must have a link OR visible sub-items
+              (menu.href || (menu.subMenu && menu.subMenu.length > 0)), // Item must have a link OR visible sub-items
           );
 
         // If there are any visible menu items in this section, keep the section (tag)
@@ -290,10 +290,12 @@ export default function NavSideBar({
       className={`bg-emerald-200 dark:bg-gray-900 group relative text-slate-600  shadow-lg shadow-slate-400  ${
         isCollapsed ? "xl:w-20 w-16" : "xl:w-64 w-48"
       } min-w-[4rem] flex flex-col duration-300`}
-      onClick={() => isSmall && setIsCollapsed(true)}>
+      onClick={() => isSmall && setIsCollapsed(true)}
+    >
       <div className="flex items-center h-20 justify-center cursor-pointer overflow-hidden group-hover:overflow-visible">
         <h1
-          className={`text-black dark:text-slate-400 text-4xl font-thin ${festive.className}`}>
+          className={`text-black dark:text-slate-400 text-4xl font-thin ${festive.className}`}
+        >
           📱 {!isCollapsed && <span className="delay-700">Ciao Mobile</span>}
         </h1>
       </div>
@@ -301,7 +303,8 @@ export default function NavSideBar({
       <div
         className={` ${
           isCollapsed ? "flex-col" : "flex-row"
-        } flex items-center justify-center gap-4 px-4 py-2`}>
+        } flex items-center justify-center gap-4 px-4 py-2`}
+      >
         {/* <DarkMood isCollapsed={isCollapsed} /> */}
         <LanguageSwitcher isCollapsed={isCollapsed} dictionary={dictionary} />
       </div>
@@ -341,7 +344,8 @@ export default function NavSideBar({
                         menu.subMenu.some((sub) => pathname.includes(sub.href)))
                         ? "bg-gray-800 text-gray-200"
                         : "hover:bg-gray-800 hover:text-gray-200"
-                    }`}>
+                    }`}
+                    >
                       {menu.icon}
                       {!isCollapsed && (
                         <span className="ml-3 font-sans text-sm font-bold">
@@ -386,7 +390,8 @@ export default function NavSideBar({
                               pathname.includes(subItem.href)
                                 ? "bg-gray-700 text-lime-100"
                                 : ""
-                            }`}>
+                            }`}
+                            >
                               {subItem.icon}
                               <span className="ml-4 font-sans text-sm font-bold">
                                 {subItem.label}
@@ -408,7 +413,8 @@ export default function NavSideBar({
                   pathname.includes(item.href)
                     ? "bg-gray-800 text-gray-200"
                     : "hover:bg-gray-800 hover:text-gray-200"
-                }`}>
+                }`}
+                >
                   {item.icon}
                   {!isCollapsed && (
                     <span className="ml-3 font-sans text-sm font-bold">
