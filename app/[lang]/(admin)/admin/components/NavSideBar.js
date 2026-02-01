@@ -29,7 +29,6 @@ import { Mails } from "lucide-react";
 import { Lock } from "lucide-react";
 import { useFetchPermissionByUserIdQuery } from "@/store/slices/permissionApi";
 import Loading from "./Loading";
-
 const festive = Kaushan_Script({ subsets: ["latin"], weight: "400" });
 
 export default function NavSideBar({
@@ -296,7 +295,9 @@ export default function NavSideBar({
         <h1
           className={`text-black dark:text-slate-400 text-4xl font-thin ${festive.className}`}
         >
-          📱 {!isCollapsed && <span className="delay-700">Ciao Mobile</span>}
+          <Link href={`/${params.lang}/admin`}>
+            📱 {!isCollapsed && <span className="delay-700">Ciao Mobile</span>}
+          </Link>
         </h1>
       </div>
 

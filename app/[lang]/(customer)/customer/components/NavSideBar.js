@@ -38,7 +38,7 @@ export default function NavSideBar({ params, dictionary, isDrawerOpen }) {
   const [openSubmenu, setOpenSubmenu] = useState(null);
   const { data: notifications } = useFetchUserNotificationsQuery(
     session?.user?.sub,
-    { skip: !session?.user?.sub }
+    { skip: !session?.user?.sub },
   );
   const { data: carts = [] } = useFetchCartByUserQuery(session?.user?.sub, {
     skip: !session?.user?.sub,
@@ -48,7 +48,7 @@ export default function NavSideBar({ params, dictionary, isDrawerOpen }) {
   });
   const { data: userPermissions, isLoading } = useFetchPermissionByUserIdQuery(
     session?.user?.sub,
-    { skip: !session?.user?.sub }
+    { skip: !session?.user?.sub },
   );
 
   const navItems = [
@@ -134,7 +134,7 @@ export default function NavSideBar({ params, dictionary, isDrawerOpen }) {
 
     // Check if the permissionName exists in the user's permissions array (case-sensitive match)
     return userPermissions.some(
-      (permission) => permission.name === permissionName
+      (permission) => permission.name === permissionName,
     );
   };
 
@@ -152,7 +152,7 @@ export default function NavSideBar({ params, dictionary, isDrawerOpen }) {
             const visibleSubItems = item.subMenu.filter(
               (subItem) =>
                 !subItem.requiredPermission ||
-                userHasPermission(subItem.requiredPermission)
+                userHasPermission(subItem.requiredPermission),
             );
             if (visibleSubItems.length > 0) {
               return { ...item, subMenu: visibleSubItems };
@@ -179,11 +179,15 @@ export default function NavSideBar({ params, dictionary, isDrawerOpen }) {
       <div
         className={`bg-emerald-200 dark:bg-gray-900 relative text-slate-600 xl:w-64 w-48 min-w-[4rem] flex flex-col duration-300 ${
           isDrawerOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:translate-x-0 fixed lg:relative h-screen z-40`}>
+        } lg:translate-x-0 fixed lg:relative h-screen z-40`}
+      >
         <div className="flex items-center h-20 justify-center cursor-pointer overflow-hidden">
           <h1
-            className={`text-slate-600 dark:text-slate-400 text-xl xl:text-3xl font-thin ${festive.className}`}>
-            📱 <span className="delay-700">Ciao Mobile</span>
+            className={`text-slate-600 dark:text-slate-400 text-xl xl:text-3xl font-thin ${festive.className}`}
+          >
+            <Link href={`/${params.lang}/customer`}>
+              📱 <span className="delay-700">Ciao Mobile</span>
+            </Link>
           </h1>
         </div>
         <div className="flex justify-center gap-4 items-center p-2 h-20  w-full">
@@ -202,11 +206,13 @@ export default function NavSideBar({ params, dictionary, isDrawerOpen }) {
                     pathname.includes(item.href)
                       ? "bg-gray-800 dark:bg-gray-950 text-gray-200 dark:text-gray-300"
                       : "hover:bg-gray-800 dark:hover:bg-gray-950 hover:text-gray-200 dark:hover:text-gray-300"
-                  }`}>
+                  }`}
+                >
                   <div
                     className={`flex items-center 
                     justify-between w-full
-                  }`}>
+                  }`}
+                  >
                     <div className="flex items-center w-full">
                       {item.icon}
                       <span className="ml-4">{item.label}</span>
@@ -241,7 +247,8 @@ export default function NavSideBar({ params, dictionary, isDrawerOpen }) {
                         className={`flex items-center py-2 px-8 hover:bg-emerald-300 dark:hover:bg-gray-700 transition-colors duration-200 ${
                           pathname === subItem.href &&
                           " text-blue-700 dark:text-emerald-400"
-                        }`}>
+                        }`}
+                      >
                         {subItem.icon}
                         <span className="ml-4">{subItem.label}</span>
                         {subItem.label === dictionary.cart_list &&
@@ -281,13 +288,15 @@ export default function NavSideBar({ params, dictionary, isDrawerOpen }) {
             <div className="flex items-center gap-2 justify-between my-4">
               <Link
                 href="/customer/change-password"
-                className="text-blue-700 dark:text-gray-400 rounded-md transition duration-200 flex items-center">
+                className="text-blue-700 dark:text-gray-400 rounded-md transition duration-200 flex items-center"
+              >
                 <Lock className="w-4 h-4" />
                 <span className="ml-1">{dictionary.change_password}</span>
               </Link>
               <button
                 onClick={handleSignOut}
-                className="dark:text-gray-400 text-blue-700 rounded-md transition duration-200 flex items-center">
+                className="dark:text-gray-400 text-blue-700 rounded-md transition duration-200 flex items-center"
+              >
                 <Power className="w-4 h-4" />
                 <span className="ml-1">{dictionary.Logout}</span>
               </button>
