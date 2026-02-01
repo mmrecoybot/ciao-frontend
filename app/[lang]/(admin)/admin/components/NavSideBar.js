@@ -32,6 +32,7 @@ import Loading from "./Loading";
 const festive = Kaushan_Script({ subsets: ["latin"], weight: "400" });
 
 export default function NavSideBar({
+  params,
   dictionary,
   setIsCollapsed,
   isCollapsed,
