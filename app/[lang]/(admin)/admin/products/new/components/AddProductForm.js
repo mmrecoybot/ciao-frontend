@@ -4,7 +4,7 @@ import { useFetchBrandsQuery } from "@/store/slices/brandApi";
 import { useAddProductMutation } from "@/store/slices/productApi";
 import { Blocks, Loader, ShieldX } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
@@ -17,12 +17,16 @@ import { useFetchSubCategoriesQuery } from "@/store/slices/subCategoryApi";
 import SimpleImageUpload from "./SimpleImageUpload";
 
 export default function AddProductForm({ lang, dictionary }) {
+  // Variationer image dore rakhar jonno local state
+  const [vImage, setVImage] = useState("");
+
   const {
     register,
     handleSubmit,
     control,
     watch,
     setValue,
+    getValues,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -34,12 +38,13 @@ export default function AddProductForm({ lang, dictionary }) {
       variations: [],
     },
   });
+
   const { data: brands } = useFetchBrandsQuery();
   const { data: categories } = useFetchCategoriesQuery();
   const { data: subCategories } = useFetchSubCategoriesQuery();
   const selectedCategory = watch("categoryId");
   const selectedSubCategory = subCategories?.filter(
-    (subCategory) => subCategory.category.id == selectedCategory
+    (subCategory) => subCategory.category.id == selectedCategory,
   );
 
   const [addProduct, { isLoading, isError, isSuccess, error }] =
@@ -53,7 +58,6 @@ export default function AddProductForm({ lang, dictionary }) {
       toast.error("Please add at least one variation");
       return;
     }
-
     const payload = {
       ...data,
       subCategoryId: Number(data.subCategoryId),
@@ -63,11 +67,9 @@ export default function AddProductForm({ lang, dictionary }) {
       descriptionIt:
         data.descriptionIt || codeRefItalian.current?.getContent() || "",
     };
-
-    console.log("Final Payload to Backend:", payload); // DEBUG LOG
-
     addProduct(payload);
   };
+
   useEffect(() => {
     if (isSuccess) {
       toast.dismiss();
@@ -78,24 +80,52 @@ export default function AddProductForm({ lang, dictionary }) {
     if (isError) {
       toast.error(error?.data?.error || "Error adding product");
     }
-    if (isLoading) {
-      toast.info("Updating product...");
+  }, [isSuccess, isError, lang, router]);
+
+  // --- VARIATION ADD KORAR LOGIC ---
+  const handleAddVariation = () => {
+    // getValues diye current input gulo nilam
+    const color = getValues("newVariationColor");
+    const stockVal = getValues("newVariationStock");
+    const stock = parseInt(stockVal);
+    const img = vImage; // Sorasori local state theke image nilam
+
+    console.log("Check before push:", { img, color, stock });
+
+    if (img && color && !isNaN(stock)) {
+      const currentVariations = getValues("variations") || [];
+      const updatedVariations = [...currentVariations, { img, color, stock }];
+
+      setValue("variations", updatedVariations, { shouldValidate: true });
+
+      // Add hoye gele input gulo khali kora
+      setVImage(""); // Image state khali holo
+      setValue("newVariationColor", "");
+      setValue("newVariationStock", "");
+
+      toast.success("Variation added successfully!");
+    } else {
+      // Check korchi konta miss hoise
+      if (!img) toast.error("Image upload hoinai ekhono!");
+      else if (!color) toast.error("Color lekhen nai!");
+      else if (isNaN(stock)) toast.error("Stock number den!");
     }
-  }, [isSuccess, isError, isLoading, error]);
+  };
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full mx-auto relative p-6 px-20">
-      {/* Basic Information Group */}
+      className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full mx-auto relative p-6 px-20"
+    >
+      {/* Product Basic Info Section */}
       <div className="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-4 dark:text-gray-400 border-b pb-2">
+        <h2 className="text-xl font-semibold mb-4 border-b pb-2 dark:text-gray-400">
           {dictionary.productsPages.basic_info}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-              Product Image
+            <label className="block text-sm font-medium mb-2 dark:text-gray-200">
+              Main Thumbnail
             </label>
             <Controller
               name="thumbnail"
@@ -116,7 +146,6 @@ export default function AddProductForm({ lang, dictionary }) {
             name="name"
             register={register}
             errors={errors}
-            placeholder="Iphone 16"
             required
           />
           <FormSelect
@@ -125,10 +154,7 @@ export default function AddProductForm({ lang, dictionary }) {
             register={register}
             errors={errors}
             required
-            options={brands?.map((brand) => ({
-              value: brand.id,
-              label: brand.name,
-            }))}
+            options={brands?.map((b) => ({ value: b.id, label: b.name }))}
           />
           <FormSelect
             label={dictionary.productsPages.category}
@@ -136,27 +162,24 @@ export default function AddProductForm({ lang, dictionary }) {
             register={register}
             errors={errors}
             required
-            options={categories?.map((category) => ({
-              value: category.id,
-              label: category.name,
-            }))}
+            options={categories?.map((c) => ({ value: c.id, label: c.name }))}
           />
           <FormSelect
             label={dictionary.categoryPages.sub_category}
             name="subCategoryId"
             register={register}
             errors={errors}
-            options={selectedSubCategory?.map((subcategory) => ({
-              value: subcategory.id,
-              label: subcategory.name,
+            options={selectedSubCategory?.map((s) => ({
+              value: s.id,
+              label: s.name,
             }))}
           />
         </div>
       </div>
 
-      {/* Pricing Information Group */}
+      {/* Pricing Section */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-4 dark:text-gray-400 border-b pb-2">
+        <h2 className="text-xl font-semibold mb-4 border-b pb-2 dark:text-gray-400">
           {dictionary.productsPages.pricing}
         </h2>
         <div className="grid grid-cols-1 gap-4">
@@ -165,219 +188,151 @@ export default function AddProductForm({ lang, dictionary }) {
             name="dealer_price"
             register={register}
             errors={errors}
-            placeholder={dictionary.productsPages.dealer_price}
-            required
           />
           <FormInput
             label={dictionary.productsPages.retail_price}
             name="retail_price"
             register={register}
             errors={errors}
-            placeholder={dictionary.productsPages.retail_price}
           />
           <FormInput
             label={dictionary.productsPages.purchase_price}
             name="purchase_price"
             register={register}
             errors={errors}
-            placeholder={dictionary.productsPages.purchase_price}
           />
           <FormInput
-            label={`${dictionary.ordersPages.margin} (%)`}
+            label="Margin (%)"
             name="margin"
             register={register}
             errors={errors}
-            placeholder={dictionary.ordersPages.margin}
           />
         </div>
       </div>
 
-      {/* Variations Group */}
+      {/* Variations Section */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-4 dark:text-gray-400 border-b pb-2">
+        <h2 className="text-xl font-semibold mb-4 border-b pb-2 dark:text-gray-400">
           {dictionary.productsPages.variations}
         </h2>
         <div className="space-y-4">
-          {/* Existing Variations Display */}
-          <div className="grid grid-cols-4  gap-2">
+          {/* Variation Display List */}
+          <div className="grid grid-cols-4 gap-2">
             {watch("variations")?.map((variation, index) => (
               <div
                 key={index}
-                className="border flex justify-between items-center flex-col gap-4 p-3 rounded-md bg-gray-50 dark:bg-gray-700">
+                className="border p-2 rounded bg-gray-50 dark:bg-gray-700 flex flex-col items-center"
+              >
                 <img
                   src={variation.img}
-                  alt={variation.color}
-                  className="w-16 h-16 object-cover rounded"
+                  className="w-12 h-12 object-cover rounded mb-1"
                 />
-                <div className="flex flex-col justify-between items-center">
-                  <span className="capitalize">
-                    {dictionary.productsPages.color} : {variation.color}
-                  </span>
-                  <span>
-                    {dictionary.productsPages.stock} : {variation.stock}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const currentVariations = watch("variations") || [];
-                      const updatedVariations = currentVariations.filter(
-                        (_, i) => i !== index
-                      );
-                      setValue("variations", updatedVariations, {
-                        shouldValidate: true,
-                      });
-                    }}
-                    className="text-red-500 hover:text-red-700">
-                    {dictionary.productsPages.remove}
-                  </button>
-                </div>
+                <span className="text-[10px] text-center">
+                  {variation.color} ({variation.stock})
+                </span>
+                <button
+                  type="button"
+                  className="text-red-500 text-[10px] mt-1"
+                  onClick={() => {
+                    const current = getValues("variations");
+                    setValue(
+                      "variations",
+                      current.filter((_, i) => i !== index),
+                    );
+                  }}
+                >
+                  Remove
+                </button>
               </div>
             ))}
           </div>
 
-          {/* Add New Variation Form */}
-          <div className="border p-4 rounded-md bg-gray-50 dark:bg-gray-700">
-            <h3 className="text-lg font-medium mb-4 dark:text-gray-400">
+          {/* ADD VARIATION FORM */}
+          <div className="border p-4 rounded bg-gray-100 dark:bg-gray-900">
+            <h3 className="text-sm font-bold mb-3">
               {dictionary.productsPages.add_new_variation}
             </h3>
-            <div className="grid grid-cols-1 gap-4">
-              <Controller
-                name="newVariationImg"
-                control={control}
-                render={({ field }) => (
-                  <SimpleImageUpload
-                    onImageChange={field.onChange}
-                    folder="product"
-                    image={field.value}
-                    key={field.value}
-                    display="block"
-                    dictionary={dictionary}
-                  />
-                )}
+            <div className="space-y-3">
+              {/* Eikhane amra image local state-e rakhchi jate mis na hoy */}
+              <SimpleImageUpload
+                onImageChange={(url) => setVImage(url)}
+                folder="product"
+                image={vImage}
+                display="block"
+                dictionary={dictionary}
               />
               <FormInput
-                label={dictionary.productsPages.color}
+                label="Color"
                 name="newVariationColor"
                 register={register}
                 errors={errors}
-                placeholder={dictionary.productsPages.enter_color}
               />
               <FormInput
-                label={dictionary.productsPages.stock}
+                label="Stock"
                 name="newVariationStock"
                 register={register}
                 errors={errors}
                 type="number"
-                placeholder={dictionary.productsPages.enter_stock_quantity}
               />
+
+              <button
+                type="button"
+                onClick={handleAddVariation}
+                className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-bold"
+              >
+                + Add This Variation
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                const img = watch("newVariationImg");
-                const color = watch("newVariationColor");
-                const stock = parseInt(watch("newVariationStock"));
-
-                console.log("Adding Variation - Inputs:", {
-                  img,
-                  color,
-                  stock,
-                }); // DEBUG LOG
-
-                if (img && color && stock) {
-                  const currentVariations = watch("variations") || [];
-                  const updatedVariations = [
-                    ...currentVariations,
-                    { img, color, stock },
-                  ];
-                  console.log("Updated Variations List:", updatedVariations); // DEBUG LOG
-
-                  setValue("variations", updatedVariations, {
-                    shouldValidate: true,
-                  }); // Clear the form
-
-                  setValue("newVariationImg", "", { shouldValidate: true });
-                  setValue("newVariationColor", "", { shouldValidate: true });
-                  setValue("newVariationStock", "", { shouldValidate: true });
-                } else {
-                  console.warn("Cannot add variation: Missing fields", {
-                    img,
-                    color,
-                    stock,
-                  });
-                }
-              }}
-              className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-              {dictionary.productsPages.add_variation}
-            </button>
           </div>
         </div>
       </div>
 
-      {/* Description Group */}
+      {/* Description */}
       <div className="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-4 dark:text-gray-400 border-b pb-2">
+        <h2 className="text-xl font-semibold mb-4 border-b pb-2 dark:text-gray-400">
           {dictionary.productsPages.description}
         </h2>
-        <div className="space-y-6">
-          <div>
-            <label className="block text-lg font-medium mb-2 dark:text-gray-400">
-              {dictionary.productsPages.description_english}
-            </label>
-            <Controller
-              name="description"
-              control={control}
-              render={({ field }) => (
-                <CodeEditor
-                  content={field.value}
-                  ref={codeRef}
-                  onChange={field.onChange}
-                />
-              )}
-            />
-          </div>
-          <div>
-            <label className="block text-lg font-medium mb-2 text-gray-700 dark:text-gray-400">
-              {dictionary.productsPages.description_italian}
-            </label>
-            <Controller
-              name="descriptionIt"
-              control={control}
-              render={({ field }) => (
-                <CodeEditor
-                  content={field.value}
-                  ref={codeRefItalian}
-                  onChange={field.onChange}
-                />
-              )}
-            />
-          </div>
+        <div className="space-y-4">
+          <Controller
+            name="description"
+            control={control}
+            render={({ field }) => (
+              <CodeEditor
+                content={field.value}
+                ref={codeRef}
+                onChange={field.onChange}
+              />
+            )}
+          />
+          <Controller
+            name="descriptionIt"
+            control={control}
+            render={({ field }) => (
+              <CodeEditor
+                content={field.value}
+                ref={codeRefItalian}
+                onChange={field.onChange}
+              />
+            )}
+          />
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="col-span-2 flex gap-4 justify-center items-center mt-6">
+      <div className="col-span-2 flex gap-4 justify-center mt-6">
         <button
           type="submit"
           disabled={isLoading}
-          className="flex justify-center gap-1 items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-          {isLoading ? (
-            <>
-              <Loader className="animate-spin" />{" "}
-              {dictionary.productsPages.adding}
-            </>
-          ) : (
-            <>
-              <Blocks /> {dictionary.productsPages.add_product}
-            </>
-          )}
+          className="bg-indigo-600 text-white px-10 py-2 rounded-md flex items-center gap-2"
+        >
+          {isLoading ? <Loader className="animate-spin" /> : <Blocks />} Add
+          Product
         </button>
-
         <button
           type="button"
-          onClick={router.back}
-          className="w-36 flex justify-center items-center gap-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-          <ShieldX /> {dictionary.activation.cancel}
+          onClick={() => router.back()}
+          className="bg-red-600 text-white px-10 py-2 rounded-md"
+        >
+          Cancel
         </button>
       </div>
     </form>
