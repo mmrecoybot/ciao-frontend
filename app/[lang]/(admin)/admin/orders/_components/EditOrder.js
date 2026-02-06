@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useUpdateOrderMutation } from "@/store/slices/orderApi";
 import React, { useEffect, useState } from "react";
@@ -41,12 +41,14 @@ export default function EditOrder({ orderData, setIsEdit, dictionary }) {
       setRemarks("");
       setIsEdit(false);
     }
-  }, [orderData, isLoading, isSuccess]);
+  }, [orderData, isLoading, isSuccess, setIsEdit]);
 
   return (
     <div className="fixed w-screen h-screen left-0 top-0 bg-black/20 z-20 text-start">
       <div className="absolute top-1/2 left-1/2 min-w-96 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 dark:text-gray-400 p-6 rounded-lg shadow-lg">
-        <h2 className="text-lg font-medium mb-4">{dictionary.orderPages.edit_order}</h2>
+        <h2 className="text-lg font-medium mb-4">
+          {dictionary.orderPages.edit_order}
+        </h2>
         <form onSubmit={handleSubmit} className="text-start">
           <div className="mb-4">
             <label
@@ -68,10 +70,16 @@ export default function EditOrder({ orderData, setIsEdit, dictionary }) {
               }}
             >
               <option value="pending">{dictionary.orderPages.pending}</option>
-              <option value="processing">{dictionary.orderPages.processing}</option>
+              <option value="processing">
+                {dictionary.orderPages.processing}
+              </option>
               <option value="shipped">{dictionary.orderPages.shipped}</option>
-              <option value="delivered">{dictionary.orderPages.delivered}</option>
-              <option value="cancelled">{dictionary.orderPages.cancelled}</option>
+              <option value="delivered">
+                {dictionary.orderPages.delivered}
+              </option>
+              <option value="cancelled">
+                {dictionary.orderPages.cancelled}
+              </option>
             </select>
           </div>
 

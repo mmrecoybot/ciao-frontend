@@ -1,11 +1,15 @@
-const Categories = ({ categories, lang, selectedCategory, onCategoryChange ,initalCategory}) => {
-
-  
-  
+const Categories = ({
+  categories,
+  lang,
+  selectedCategory,
+  onCategoryChange,
+  initalCategory,
+}) => {
   return (
     <div className="px-4 pt-2 mb-2 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-1 overflow-x-auto border-gray-200 p-1">
       {categories.map((category) => {
-        const isSelected = selectedCategory.toLowerCase() === category.name.toLowerCase();
+        const isSelected =
+          selectedCategory?.toLowerCase() === category?.name?.toLowerCase();
         return (
           <button
             key={category.name}
