@@ -15,10 +15,11 @@ const SingleOrder = ({ order, lang, dictionary }) => {
             {dictionary.orderPages.order} #{order.orderNumber}
           </h1>
           <span
-            className={`px-4 py-2 rounded-full uppercase text-sm font-semibold ${order.status === "delivered"
+            className={`px-4 py-2 rounded-full uppercase text-sm font-semibold ${
+              order.status === "delivered"
                 ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
                 : "bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100"
-              }`}
+            }`}
           >
             {order.status}
           </span>
@@ -67,7 +68,9 @@ const SingleOrder = ({ order, lang, dictionary }) => {
                 {dictionary.companyPages.company}
               </p>
               <p className="font-medium text-gray-900 dark:text-white">
-                {order.user.dealer.companyName}
+                {order.user?.dealer?.companyName
+                  ? order.user?.dealer?.companyName
+                  : "N/A"}
               </p>
             </div>
             <div>
@@ -75,7 +78,9 @@ const SingleOrder = ({ order, lang, dictionary }) => {
                 {dictionary.orderPages.contact}
               </p>
               <p className="font-medium text-gray-900 dark:text-white">
-                {order.user.dealer.adminPhone}
+                {order.user?.dealer?.companyName
+                  ? order.user?.dealer?.companyName
+                  : "N/A"}
               </p>
             </div>
             <div>
@@ -83,7 +88,9 @@ const SingleOrder = ({ order, lang, dictionary }) => {
                 {dictionary.orderPages.address}
               </p>
               <p className="font-medium text-gray-900 dark:text-white">
-                {formatAddress(order.user.dealer.billingAddress)}
+                {order.user?.dealer?.billingAddress
+                  ? formatAddress(order.user?.dealer?.billingAddress)
+                  : "N/A"}
               </p>
             </div>
           </div>
@@ -331,12 +338,11 @@ function formatAddress(address) {
     address.municipality,
     address.province,
     address.zipCode,
-    address.country
+    address.country,
   ].filter(Boolean); // removes falsy values like "", null, undefined
 
   return parts.length ? parts.join(", ") : "Not Available";
 }
-
 
 const formatDate = (date) => {
   return date ?? "Not available";

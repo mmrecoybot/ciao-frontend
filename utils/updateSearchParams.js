@@ -1,10 +1,10 @@
-export function updateSearchParams(url, newParams) {
-  const urlObj = new URL(url); // Parse the URL
+export function updateSearchParams(searchParams, newParams) {
+  const params = new URLSearchParams(searchParams);
 
-  // Add or update the new search parameters
   Object.entries(newParams).forEach(([key, value]) => {
-    urlObj.searchParams.set(key, value);
+    if (value == null) params.delete(key);
+    else params.set(key, String(value));
   });
 
-  return urlObj.toString(); // Return the updated URL as a string
+  return `?${params.toString()}`;
 }

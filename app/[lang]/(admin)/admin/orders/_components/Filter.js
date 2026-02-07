@@ -1,5 +1,3 @@
-import React from "react";
-
 export default function OrderFilterAndSearch({
   searchTerm,
   setSearchTerm,
@@ -14,7 +12,13 @@ export default function OrderFilterAndSearch({
   data,
 }) {
   const dealers = Array.from(
-    new Set(data?.map((order) => order.user.dealer.companyName))
+    new Set(
+      data?.map((order) =>
+        order.user?.dealer?.companyName
+          ? order.user?.dealer?.companyName
+          : "N/A",
+      ),
+    ),
   );
   return (
     <div className="bg-white dark:bg-gray-800 dark:text-gray-500 p-4 rounded-lg shadow-sm mb-6">

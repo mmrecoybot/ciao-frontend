@@ -84,7 +84,7 @@ export default function NavSideBar({ params, dictionary, isDrawerOpen }) {
       requiredPermission: "view_all_orders", // Permission needed for Orders link
       subMenu: [
         {
-          href: `/${lang}/customer/orders/add?category=smartphone&showPrices=no&sort=default`,
+          href: `/${lang}/customer/orders/add`,
           icon: <ShoppingCart className="w-6 h-6" />,
           label: dictionary.add_order,
           requiredPermission: "manage_orders", // Permission needed for Add Order link
