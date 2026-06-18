@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start -p 8020",
+    "start": "next start",
     "lint": "next lint",
     "turbo": "rimraf .next && next dev --turbo"
   },
