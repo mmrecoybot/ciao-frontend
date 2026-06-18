@@ -2,14 +2,17 @@
   "name": "next-ecommerse",
   "version": "0.1.0",
   "private": true,
-"scripts": {
+  "engines": {
+    "node": "24.x",
+    "npm": "11.x"
+  },
+  "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start -p 8020",
     "lint": "next lint",
     "turbo": "rimraf .next && next dev --turbo"
   },
-  
   "dependencies": {
     "@auth/mongodb-adapter": "^3.7.3",
     "@formatjs/intl-localematcher": "^0.5.10",
